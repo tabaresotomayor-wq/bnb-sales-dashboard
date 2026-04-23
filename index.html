@@ -282,15 +282,15 @@ tr:hover { background: #f8fafc; }
       <thead><tr><th>Date</th><th>Name</th><th>Type</th><th class="num">Cash</th></tr></thead>
       <tbody id="irlo-body"></tbody>
     </table>
-    <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 12px; color: #64748b;">
+    <div style="margin-top: 16px; padding: 12px 12px 12px 12px; background: #f8fafc; border-radius: 8px; font-size: 12px; color: #64748b;">
       <strong style="color:#0f172a;">IRLO note:</strong> Unit upsell Â· no setter comm Â· Tabare/GT/Steven split. La-von Green $10,500 Apr 3.
     </div>
   </div>
 </div>
 
 <div class="footer">
-  <div><strong>Sources:</strong> GT Accounting Â· EOC Report Â· HubSpot MCP</div>
-  <div><strong>Refresh:</strong> artifact reload button</div>
+  <div><strong>Sources:</strong> GT Accounting Â· EOC Report Â· HubSpot Live</div>
+  <div><strong>Refresh:</strong> reload page</div>
 </div>
 
 </div>
@@ -311,7 +311,7 @@ tr:hover { background: #f8fafc; }
     {d:"2026-04-08", name:"Hillary Naranjo-Mejia", source:"E book lead",   closer:"Gino",   setter:"Tabare",    cash:1875},
     {d:"2026-04-08", name:"Nakia Brown",         source:"E book lead",     closer:"Gino",   setter:"Thatiyana", cash:5000},
     {d:"2026-04-09", name:"Hillary Naranjo-Mejia", source:"E book lead",   closer:"Gino",   setter:"Tabare",    cash:1875},
-    {d:"2026-04-10", name:"Aniyah Mcmaster",     source:"E book lead",     closer:"Gino",   setter:"Thatiyana", cash:105},
+    {d:"2026-04-10", "Aniyah Mcmaster",     source:"E book lead",     closer:"Gino",   setter:"Thatiyana", cash:105},
     {d:"2026-04-15", name:"Aiden Schmidt",       source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:5000},
     {d:"2026-04-16", name:"Keyniah Riddick",     source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:100},
     {d:"2026-04-17", name:"Hellen Barrios",      source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:1000},
@@ -438,7 +438,7 @@ tr:hover { background: #f8fafc; }
       {name: "E Book Funnel",   code: "E", cash: 14955, deals: 7, label: "Hillary x2, Nakia, Aniyah, Aiden, Keyniah, Hellen"},
       {name: "IRLO (Unit Sale)",code: "U", cash: 10500, deals: 1, label: "La-von Green"},
       {name: "WEBBY Funnel",    code: "W", cash: 1456,  deals: 5, label: "Sarayea, Gatlin, Daijah, Julianna, Noah"},
-      {name: "Airbnb VSL",      code: "V", cash: 600,   deals: 2, label: "Jason, Yolanda"}
+      {name: "Airbnb VSL",      code: "U", cash: 600,   deals: 2, label: "Jason, Yolanda"}
     ];
     var total = sources.reduce(function(s, x) { return s + x.cash; }, 0);
     var max = sources.reduce(function(m, x) { return x.cash > m ? x.cash : m; }, 0);
@@ -535,22 +535,20 @@ tr:hover { background: #f8fafc; }
     });
   }
 
-  var HS_TOOL = 'mcp__356ea399-08d0-4598-8d0f-de2a64c7e1e8__search_crm_objects';
-
-  async function hsCount(filterGroups, intent) {
+  async function fetchFunnel() {
     try {
-      if (!window.cowork || !window.cowork.callMcpTool) return null;
-      var res = await window.cowork.callMcpTool(HS_TOOL, {
-        objectType: "contacts", filterGroups: filterGroups, limit: 1,
-        chatInsights: { userIntent: intent, satisfaction: "NEUTRAL" }
-      });
-      if (!res || res.isError) return null;
-      var data = res.structuredContent;
-      if (!data && res.content && res.content[0] && res.content[0].text) {
-        try { data = JSON.parse(res.content[0].text); } catch (e) { data = null; }
-      }
-      return data && typeof data.total === 'number' ? data.total : null;
-    } catch (e) { console.error('[dash] hsCount failed:', e); return null; }
+      var r = await fetch('/api/funnel');
+      if (!r.ok) return null;
+      return await r.json();
+    } catch (e) { console.error('[dash] fetchFunnel failed:', e); return null; }
+  }
+
+  async function fetchVelocity() {
+    try {
+      var r = await fetch('/api/velocity');
+      if (!r.ok) return null;
+      return await r.json();
+    } catch (e) { console.error('[dash] fetchVelocity failed:', e); return null; }
   }
 
   var STATUS_ORDER = [
@@ -570,27 +568,26 @@ tr:hover { background: #f8fafc; }
 
   async function renderFunnel() {
     try {
-      var counts = await Promise.all(STATUS_ORDER.map(function(s) {
-        return hsCount(
-          [{filters: [{propertyName: "hs_lead_status", operator: "EQ", value: s.key}]}],
-          "Count status " + s.key
-        );
-      }));
-      var maxCount = Math.max.apply(null, counts.filter(function(c) { return c !== null; }).concat([1]));
-      var totalAll = counts.reduce(function(s, c) { return s + (c || 0); }, 0);
-      var html = STATUS_ORDER.map(function(s, i) {
-        var count = counts[i];
-        if (count === null || count === 0) return '';
-        var pct = (count / maxCount) * 100;
-        var share = (count / totalAll * 100).toFixed(1);
+      var data = await fetchFunnel();
+      if (!data || !data.statuses) {
+        document.getElementById('funnel-body').innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">HubSpot connection error</div>';
+        return;
+      }
+      var statuses = data.statuses;
+      var totalAll = data.total || statuses.reduce(function(s, r) { return s + (r.count || 0); }, 0);
+      var maxCount = Math.max.apply(null, statuses.map(function(s) { return s.count || 0; }).concat([1]));
+      var html = statuses.map(function(s) {
+        if (!s.count) return '';
+        var pct = (s.count / maxCount) * 100;
+        var share = totalAll > 0 ? (s.count / totalAll * 100).toFixed(1) : '0';
         return '<div class="funnel-row stage-' + s.stage + '">' +
           '<div class="funnel-label">' + s.label + '</div>' +
-          '<div class="funnel-count">' + fmtNum(count) + '</div>' +
+          '<div class="funnel-count">' + fmtNum(s.count) + '</div>' +
           '<div class="funnel-pct">' + share + '%</div>' +
           '<div class="funnel-bar-container"><div class="funnel-bar-fill" style="width:' + pct + '%;"></div></div>' +
         '</div>';
       }).join('');
-      document.getElementById('funnel-body').innerHTML = html || '<div style="padding:20px;text-align:center;color:#94a3b8;">HubSpot not connected</div>';
+      document.getElementById('funnel-body').innerHTML = html || '<div style="padding:20px;text-align:center;color:#94a3b8;">No leads found</div>';
       document.getElementById('funnel-meta').textContent = fmtNum(totalAll) + ' total';
     } catch (e) {
       console.error('[dash] renderFunnel failed:', e);
@@ -600,13 +597,9 @@ tr:hover { background: #f8fafc; }
 
   async function renderVelocity() {
     try {
-      var results = await Promise.all([
-        hsCount([{filters:[{propertyName:"createdate",operator:"GTE",value:"2026-04-01T00:00:00Z"}]}], "Leads MTD"),
-        hsCount([{filters:[{propertyName:"createdate",operator:"GTE",value:"2026-04-16T00:00:00Z"}]}], "Leads 7d"),
-        hsCount([{filters:[{propertyName:"closedate",operator:"GTE",value:"2026-04-01T00:00:00Z"}]}], "Closed MTD"),
-        hsCount([{filters:[{propertyName:"closedate",operator:"GTE",value:"2026-04-16T00:00:00Z"}]}], "Closed 7d")
-      ]);
-      var newMTD = results[0], newLast7d = results[1], wonMTD = results[2], wonLast7d = results[3];
+      var v = await fetchVelocity();
+      if (!v) return;
+      var newMTD = v.leadsMTD || 0, newLast7d = v.leads7d || 0, wonMTD = v.wonMTD || 0, wonLast7d = v.won7d || 0;
       var today = new Date();
       var daysMTD = today.getDate();
       var newPerDay = newMTD ? (newMTD / daysMTD).toFixed(0) : 'â';
