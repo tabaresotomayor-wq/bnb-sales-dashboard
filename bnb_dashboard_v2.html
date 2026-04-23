@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BNB Know How — MTD Sales Command</title>
+<style>
+:root { color-scheme: light; --brand-blue: #3B82F6; --brand-blue-dark: #1E40AF; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
+  background: #f6f7f9; color: #0f172a; font-size: 14px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+.container { max-width: 1400px; margin: 0 auto; padding: 24px; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand-mark {
+  width: 52px; height: 52px; border-radius: 10px;
+  background: #000; display: flex; align-items: center; justify-content: center;
+  padding: 7px;
+}
+.brand-mark svg { width: 100%; height: 100%; display: block; }
+.brand-text h1 { font-size: 20px; font-weight: 900; letter-spacing: -0.02em; color: #0f172a; display: flex; align-items: center; flex-wrap: wrap; gap: 0 8px; }
+.brand-text h1 .bnb { color: #0f172a; }
+.brand-text h1 .kh { color: var(--brand-blue); }
+.brand-text h1 .cmd { color: #64748b; font-weight: 500; font-size: 16px; margin-left: 4px; }
+.brand-text p { font-size: 12px; color: #64748b; font-weight: 500; margin-top: 2px; }
+.mtd-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--brand-blue); color: #fff; padding: 5px 11px; border-radius: 999px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em;
+}
+.mtd-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.25); animation: pulse 2s infinite; }
+@keyframes pulse { 0%, 100% {opacity: 1;} 50% {opacity: 0.5;} }
+.data-stamp { font-size: 11px; color: #94a3b8; text-align: right; }
+.data-stamp strong { color: #0f172a; font-weight: 600; }
+.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 16px; }
+.kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 18px 20px; position: relative; overflow: hidden; }
+.kpi-label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.kpi-value { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; color: #0f172a; }
+.kpi-sub { font-size: 12px; color: #94a3b8; margin-top: 4px; }
+.kpi-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+.kpi-cash .kpi-accent { background: #10b981; }
+.kpi-deals .kpi-accent { background: var(--brand-blue); }
+.kpi-close .kpi-accent { background: #8b5cf6; }
+.kpi-show .kpi-accent { background: #f59e0b; }
+.kpi-avg .kpi-accent { background: #ec4899; }
+.live-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #ef4444; animation: pulse 1.5s infinite; }
+.grid-2 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 16px; align-items: start; }
+.grid-half { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; align-items: start; }
+.card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; }
+.card h2 { font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; letter-spacing: -0.01em; }
+.card h2 .meta { font-size: 12px; color: #94a3b8; font-weight: 500; }
+.chart-wrap { position: relative; height: 240px; width: 100%; }
+.funnel-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f1f5f9; align-items: center; }
+.funnel-row:last-child { border-bottom: none; }
+.funnel-label { font-weight: 600; font-size: 13px; }
+.funnel-bar-container { grid-column: 1 / -1; height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.funnel-bar-fill { height: 100%; }
+.funnel-count { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 14px; }
+.funnel-pct { font-size: 11px; color: #94a3b8; font-variant-numeric: tabular-nums; }
+.stage-NEW .funnel-bar-fill { background: var(--brand-blue); }
+.stage-ATTEMPT .funnel-bar-fill { background: #0ea5e9; }
+.stage-APPT .funnel-bar-fill { background: #8b5cf6; }
+.stage-FOLLOW .funnel-bar-fill { background: #f59e0b; }
+.stage-WORKING .funnel-bar-fill { background: #ec4899; }
+.stage-NQ .funnel-bar-fill { background: #94a3b8; }
+.stage-NS .funnel-bar-fill { background: #f97316; }
+.stage-LOST .funnel-bar-fill { background: #ef4444; }
+.stage-WON .funnel-bar-fill { background: #10b981; }
+.stage-AUTO .funnel-bar-fill { background: #a855f7; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; padding: 8px 10px; border-bottom: 1px solid #e2e8f0; background: #f8fafc; }
+th.num, td.num { text-align: right; font-variant-numeric: tabular-nums; }
+td { padding: 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover { background: #f8fafc; }
+.rank { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: #f1f5f9; color: #64748b; font-size: 11px; font-weight: 700; }
+.rank.gold { background: #dbeafe; color: var(--brand-blue-dark); }
+.rank.silver { background: #e2e8f0; color: #334155; }
+.rank.bronze { background: #fed7aa; color: #9a3412; }
+.name { font-weight: 600; color: #0f172a; }
+.cash { font-weight: 700; color: #059669; font-variant-numeric: tabular-nums; }
+.pct { font-variant-numeric: tabular-nums; }
+.rate-good { color: #059669; font-weight: 700; }
+.rate-mid { color: #f59e0b; font-weight: 700; }
+.rate-low { color: #ef4444; font-weight: 700; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+.badge-W { background: #dbeafe; color: var(--brand-blue-dark); }
+.badge-V { background: #fef3c7; color: #92400e; }
+.badge-E { background: #dcfce7; color: #166534; }
+.badge-U { background: #000; color: #fbbf24; }
+.badge-X { background: #e2e8f0; color: #334155; }
+.source-bar { height: 6px; background: #f1f5f9; border-radius: 3px; overflow: hidden; }
+.source-bar-fill { height: 100%; background: linear-gradient(90deg, #10b981, #059669); }
+.loading { display: inline-block; width: 14px; height: 14px; border: 2px solid #e2e8f0; border-top-color: #64748b; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.footer { margin-top: 16px; padding: 16px 20px; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 12px; color: #64748b; }
+.footer strong { color: #0f172a; }
+.rules { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; font-size: 12px; color: #64748b; }
+.rules h3 { font-size: 11px; font-weight: 700; color: #0f172a; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; }
+.rules ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 20px; }
+.rules li { padding-left: 14px; position: relative; }
+.rules li::before { content: "→"; position: absolute; left: 0; color: var(--brand-blue); font-weight: 700; }
+@media (max-width: 980px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .grid-2, .grid-half, .rules ul { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="header">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M20 5 L35 18 L29 18 L20 11 L11 18 L5 18 Z" fill="#3B82F6"/>
+        <path d="M20 14 L35 27 L29 27 L20 20 L11 27 L5 27 Z" fill="#3B82F6"/>
+        <path d="M20 23 L35 36 L29 36 L20 29 L11 36 L5 36 Z" fill="#3B82F6"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <h1><span class="bnb">BNB</span><span class="kh">Know How</span><span class="cmd">— Sales Command</span><span class="mtd-pill" style="margin-left:4px;">April MTD</span></h1>
+      <p>Month-to-date · April 1 — April 23, 2026 · Live HubSpot pipeline</p>
+    </div>
+  </div>
+  <div class="data-stamp">
+    Cash: <strong>Row-verified vs GT Accounting</strong><br>
+    Rates: <strong>Row-counted April outcomes</strong>
+  </div>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi kpi-cash">
+    <div class="kpi-accent"></div>
+    <div class="kpi-label">Cash Collected MTD</div>
+    <div class="kpi-value">$27,511</div>
+    <div class="kpi-sub">15 deposits/closes · ties GT Accounting</div>
+  </div>
+  <div class="kpi kpi-deals">
+    <div class="kpi-accent"></div>
+    <div class="kpi-label">Deals Closed MTD</div>
+    <div class="kpi-value">15</div>
+    <div class="kpi-sub">1 full close · 14 deposits</div>
+  </div>
+  <div class="kpi kpi-close">
+    <div class="kpi-accent"></div>
+    <div class="kpi-label">Team Close Rate</div>
+    <div class="kpi-value">45.5%</div>
+    <div class="kpi-sub">15 closed ÷ 33 taken</div>
+  </div>
+  <div class="kpi kpi-show">
+    <div class="kpi-accent"></div>
+    <div class="kpi-label">Team Show Rate</div>
+    <div class="kpi-value">21.3%</div>
+    <div class="kpi-sub">33 taken ÷ ~155 scheduled</div>
+  </div>
+  <div class="kpi kpi-avg">
+    <div class="kpi-accent"></div>
+    <div class="kpi-label">Avg Deal MTD</div>
+    <div class="kpi-value">$1,834</div>
+    <div class="kpi-sub">Cash ÷ 15 events</div>
+  </div>
+</div>
+
+<div class="rules">
+  <h3>Methodology</h3>
+  <ul>
+    <li><strong>Cash:</strong> EOC Cash Collected column · reconciles to GT Accounting</li>
+    <li><strong>Closer close rate:</strong> their closes ÷ their taken calls</li>
+    <li><strong>Setter show rate:</strong> their shown calls ÷ their total sets (incl NS)</li>
+    <li><strong>Show rate MTD team:</strong> ~21% (33 taken ÷ ~155 scheduled)</li>
+    <li><strong>Unattributed setter:</strong> Setter left team or data handed off</li>
+    <li><strong>IRLO:</strong> upsell · no setter comm · Tabare/GT/Steven split</li>
+    <li><strong>HubSpot leads:</strong> raw intake, incl. bots/dupes/spam</li>
+    <li><strong>Source class:</strong> GT Accounting bucket, not EOC tag</li>
+  </ul>
+</div>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>Daily Cash — April 2026 <span class="meta">$27,511 MTD</span></h2>
+    <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
+    <div id="trendFallback" style="display:none; padding: 20px; color: #64748b; font-size: 12px;"></div>
+  </div>
+  <div class="card">
+    <h2><span class="live-dot" style="margin-right:6px;"></span>Live Pipeline <span class="meta" id="funnel-meta">Loading…</span></h2>
+    <div id="funnel-body">
+      <div style="padding: 20px; text-align: center; color: #94a3b8;"><span class="loading"></span> Fetching from HubSpot…</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-half">
+  <div class="card">
+    <h2>Closer Leaderboard <span class="meta">April 2026</span></h2>
+    <table>
+      <thead><tr><th>#</th><th>Closer</th><th class="num">Taken</th><th class="num">Closed</th><th class="num">Cash</th><th class="num">Close %</th></tr></thead>
+      <tbody id="closers-body"></tbody>
+    </table>
+  </div>
+  <div class="card">
+    <h2>Setter Leaderboard <span class="meta">April · show rate from row scan</span></h2>
+    <table>
+      <thead><tr><th>#</th><th>Setter</th><th class="num">Sets</th><th class="num">Shown</th><th class="num">Show %</th><th class="num">Cash</th></tr></thead>
+      <tbody id="setters-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="grid-half">
+  <div class="card">
+    <h2>Lead Source — April MTD <span class="meta">GT Accounting classification</span></h2>
+    <div id="sources-list"></div>
+  </div>
+  <div class="card">
+    <h2><span class="live-dot" style="margin-right:6px;"></span>HubSpot Lead Velocity <span class="meta">MTD · Live</span></h2>
+    <div id="velocity-body" style="padding-top:6px;">
+      <div style="padding: 20px; text-align: center; color: #94a3b8;"><span class="loading"></span> Fetching…</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid-half">
+  <div class="card">
+    <h2>All April Deals <span class="meta">Chronological</span></h2>
+    <div style="max-height: 400px; overflow-y: auto; margin: -20px; padding: 20px;">
+      <table>
+        <thead><tr><th>Date</th><th>Prospect</th><th>Source</th><th>Closer</th><th>Setter</th><th class="num">Cash</th></tr></thead>
+        <tbody id="deals-body"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h2>IRLO Unit Deal <span class="meta">April 2026</span></h2>
+    <table>
+      <thead><tr><th>Date</th><th>Name</th><th>Type</th><th class="num">Cash</th></tr></thead>
+      <tbody id="irlo-body"></tbody>
+    </table>
+    <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 12px; color: #64748b;">
+      <strong style="color:#0f172a;">IRLO note:</strong> Unit upsell · no setter comm · Tabare/GT/Steven split. La-von Green $10,500 Apr 3.
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div><strong>Sources:</strong> GT Accounting · EOC Report · HubSpot MCP</div>
+  <div><strong>Refresh:</strong> artifact reload button</div>
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js" integrity="sha384-iU8HYtnGQ8Cy4zl7gbNMOhsDTTKX02BTXptVP/vqAWIaTfM7isw76iyZCsjL2eVi" crossorigin="anonymous"></script>
+
+<script>
+(function() {
+  'use strict';
+
+  var APRIL_DEALS = [
+    {d:"2026-04-02", name:"Sarayea Armstrong",   source:"WEBBY LEAD",      closer:"Gino",   setter:"Thatiyana", cash:200},
+    {d:"2026-04-02", name:"Jason Villoria",      source:"Airbnb VSL LEAD", closer:"Gino",   setter:"Gino",      cash:500},
+    {d:"2026-04-02", name:"Gatlin Stevens",      source:"WEBBY LEAD",      closer:"Gino",   setter:null,        cash:200},
+    {d:"2026-04-02", name:"Daijah",              source:"WEBBY LEAD",      closer:"Gino",   setter:"Sabina",    cash:300},
+    {d:"2026-04-03", name:"La-von Green",        source:"WEBBY LEAD",      closer:"Tabare", setter:null,        cash:10500, isIRLO:true},
+    {d:"2026-04-06", name:"Julianna",            source:"WEBBY LEAD",      closer:"Gino",   setter:"Thatiyana", cash:656.25},
+    {d:"2026-04-08", name:"Hillary Naranjo-Mejia", source:"E book lead",   closer:"Gino",   setter:"Tabare",    cash:1875},
+    {d:"2026-04-08", name:"Nakia Brown",         source:"E book lead",     closer:"Gino",   setter:"Thatiyana", cash:5000},
+    {d:"2026-04-09", name:"Hillary Naranjo-Mejia", source:"E book lead",   closer:"Gino",   setter:"Tabare",    cash:1875},
+    {d:"2026-04-10", name:"Aniyah Mcmaster",     source:"E book lead",     closer:"Gino",   setter:"Thatiyana", cash:105},
+    {d:"2026-04-15", name:"Aiden Schmidt",       source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:5000},
+    {d:"2026-04-16", name:"Keyniah Riddick",     source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:100},
+    {d:"2026-04-17", name:"Hellen Barrios",      source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:1000},
+    {d:"2026-04-20", name:"Noah Johnson",        source:"WEBBY LEAD",      closer:"Gino",   setter:"Leah",      cash:100},
+    {d:"2026-04-21", name:"Yolanda Williams",    source:"Airbnb VSL LEAD", closer:"Gino",   setter:"Leah",      cash:100}
+  ];
+
+  var CLOSER_TAKEN = { "Gino": 32, "Tabare": 1 };
+
+  var SETTER_STATS = {
+    "Leah":      { sets: 13, shown: 7 },
+    "Thatiyana": { sets: 15, shown: 6 },
+    "Tabare":    { sets: 3,  shown: 3 },
+    "Gino":      { sets: 6,  shown: 3 },
+    "Sabina":    { sets: 12, shown: 2 }
+  };
+
+  var APRIL_DAILY = [
+    ["2026-04-01",0,0],   ["2026-04-02",1200,4], ["2026-04-03",10500,1], ["2026-04-04",0,0],
+    ["2026-04-05",0,0],   ["2026-04-06",656,1],  ["2026-04-07",0,0],     ["2026-04-08",6875,2],
+    ["2026-04-09",1875,1],["2026-04-10",105,1],  ["2026-04-11",0,0],     ["2026-04-12",0,0],
+    ["2026-04-13",0,0],   ["2026-04-14",0,0],    ["2026-04-15",5000,1],  ["2026-04-16",100,1],
+    ["2026-04-17",1000,1],["2026-04-18",0,0],    ["2026-04-19",0,0],     ["2026-04-20",100,1],
+    ["2026-04-21",100,1], ["2026-04-22",0,0],    ["2026-04-23",0,0]
+  ];
+
+  function fmtMoney(n) { return n >= 1000 ? '$' + (n/1000).toFixed(n < 10000 ? 1 : 0) + 'k' : '$' + n.toLocaleString(); }
+  function fmtFull(n) { return '$' + Math.round(n).toLocaleString(); }
+  function fmtNum(n) { return n.toLocaleString(); }
+  function rateClass(pct) {
+    if (pct >= 50) return 'rate-good';
+    if (pct >= 25) return 'rate-mid';
+    return 'rate-low';
+  }
+  function sourceCode(s) {
+    if (s.indexOf('WEBBY') >= 0) return 'W';
+    if (s.indexOf('VSL') >= 0) return 'V';
+    if (s.indexOf('E book') >= 0) return 'E';
+    if (s.indexOf('IRLO') >= 0 || s.indexOf('Units') >= 0) return 'U';
+    return 'X';
+  }
+  function sourceShort(s) {
+    if (s.indexOf('WEBBY') >= 0) return 'WEBBY';
+    if (s.indexOf('VSL') >= 0) return 'AIRBNB';
+    if (s.indexOf('E book') >= 0) return 'EBOOK';
+    if (s.indexOf('IRLO') >= 0 || s.indexOf('Units') >= 0) return 'IRLO';
+    return 'OTHER';
+  }
+  function safeRender(name, fn) {
+    try { fn(); console.log('[dash] ' + name + ' ok'); }
+    catch (e) { console.error('[dash] ' + name + ' FAILED:', e); }
+  }
+
+  function renderClosers() {
+    var agg = {};
+    APRIL_DEALS.forEach(function(d) {
+      if (!agg[d.closer]) agg[d.closer] = {cash: 0, closes: 0};
+      agg[d.closer].cash += d.cash;
+      agg[d.closer].closes += 1;
+    });
+    var rows = Object.keys(agg).map(function(k) { return [k, agg[k]]; })
+                     .sort(function(a, b) { return b[1].cash - a[1].cash; });
+    var html = rows.map(function(pair, i) {
+      var name = pair[0], s = pair[1];
+      var rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      var taken = CLOSER_TAKEN[name] || s.closes;
+      var closePct = taken > 0 ? (s.closes / taken * 100) : 0;
+      var pctStr = closePct.toFixed(1) + '%';
+      var pctCls = rateClass(closePct);
+      return '<tr>' +
+        '<td><span class="rank ' + rankClass + '">' + (i+1) + '</span></td>' +
+        '<td><span class="name">' + name + '</span></td>' +
+        '<td class="num">' + taken + '</td>' +
+        '<td class="num">' + s.closes + '</td>' +
+        '<td class="num"><span class="cash">' + fmtFull(s.cash) + '</span></td>' +
+        '<td class="num"><span class="' + pctCls + '">' + pctStr + '</span></td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('closers-body').innerHTML = html;
+  }
+
+  function renderSetters() {
+    var agg = {};
+    var unCash = 0, unCount = 0;
+    APRIL_DEALS.forEach(function(d) {
+      if (!d.setter) { unCash += d.cash; unCount += 1; return; }
+      if (!agg[d.setter]) agg[d.setter] = {cash: 0, closes: 0};
+      agg[d.setter].cash += d.cash;
+      agg[d.setter].closes += 1;
+    });
+    var rows = Object.keys(agg).map(function(k) { return [k, agg[k]]; })
+                     .sort(function(a, b) { return b[1].cash - a[1].cash; });
+    var html = rows.map(function(pair, i) {
+      var name = pair[0], s = pair[1];
+      var rankClass = i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+      var stat = SETTER_STATS[name] || { sets: s.closes, shown: s.closes };
+      var sets = stat.sets, shown = stat.shown;
+      var showPct = sets > 0 ? (shown / sets * 100) : 0;
+      var pctStr = showPct.toFixed(1) + '%';
+      var pctCls = rateClass(showPct);
+      return '<tr>' +
+        '<td><span class="rank ' + rankClass + '">' + (i+1) + '</span></td>' +
+        '<td><span class="name">' + name + '</span></td>' +
+        '<td class="num">' + sets + '</td>' +
+        '<td class="num">' + shown + '</td>' +
+        '<td class="num"><span class="' + pctCls + '">' + pctStr + '</span></td>' +
+        '<td class="num"><span class="cash">' + fmtFull(s.cash) + '</span></td>' +
+      '</tr>';
+    }).join('');
+    var unRow = unCount > 0 ?
+      '<tr style="background:#fef9c3;">' +
+        '<td><span class="rank" style="background:#fde68a;color:#713f12;">—</span></td>' +
+        '<td><span class="name" style="color:#713f12;">Unattributed</span><br><span style="font-size:10px;color:#92400e;">Setter left team or lead handed off</span></td>' +
+        '<td class="num" style="color:#713f12;">—</td>' +
+        '<td class="num" style="color:#713f12;">' + unCount + '</td>' +
+        '<td class="num" style="color:#713f12;">—</td>' +
+        '<td class="num"><span class="cash" style="color:#713f12;">' + fmtFull(unCash) + '</span></td>' +
+      '</tr>' : '';
+    document.getElementById('setters-body').innerHTML = html + unRow;
+  }
+
+  function renderSources() {
+    var sources = [
+      {name: "E Book Funnel",   code: "E", cash: 14955, deals: 7, label: "Hillary x2, Nakia, Aniyah, Aiden, Keyniah, Hellen"},
+      {name: "IRLO (Unit Sale)",code: "U", cash: 10500, deals: 1, label: "La-von Green"},
+      {name: "WEBBY Funnel",    code: "W", cash: 1456,  deals: 5, label: "Sarayea, Gatlin, Daijah, Julianna, Noah"},
+      {name: "Airbnb VSL",      code: "V", cash: 600,   deals: 2, label: "Jason, Yolanda"}
+    ];
+    var total = sources.reduce(function(s, x) { return s + x.cash; }, 0);
+    var max = sources.reduce(function(m, x) { return x.cash > m ? x.cash : m; }, 0);
+    var html = sources.map(function(s) {
+      var pct = (s.cash / max) * 100;
+      var share = (s.cash / total * 100).toFixed(1);
+      return '<div style="margin-bottom: 14px;">' +
+        '<div style="display: flex; justify-content: space-between; margin-bottom: 4px;">' +
+          '<div><span class="badge badge-' + s.code + '">' + s.name + '</span>' +
+          '<span style="margin-left: 6px; color: #64748b; font-size: 11px;">' + s.deals + ' deal' + (s.deals !== 1 ? 's' : '') + ' · ' + share + '% of MTD</span></div>' +
+          '<div class="cash">' + fmtFull(s.cash) + '</div>' +
+        '</div>' +
+        '<div class="source-bar"><div class="source-bar-fill" style="width: ' + pct + '%"></div></div>' +
+        '<div style="font-size: 11px; color: #cbd5e1; margin-top: 3px;">' + s.label + '</div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('sources-list').innerHTML = html;
+  }
+
+  function renderDeals() {
+    var html = APRIL_DEALS.slice().reverse().map(function(r) {
+      var irloBadge = r.isIRLO ? ' <span style="font-size:9px; background:#000; color:#fbbf24; padding:1px 5px; border-radius:3px; margin-left:4px;">IRLO</span>' : '';
+      var setterCell = r.setter || '<span style="color:#cbd5e1;">—</span>';
+      return '<tr>' +
+        '<td style="color:#64748b;white-space:nowrap;">' + r.d.slice(5) + '</td>' +
+        '<td><span class="name">' + r.name + '</span>' + irloBadge + '</td>' +
+        '<td><span class="badge badge-' + sourceCode(r.source) + '">' + sourceShort(r.source) + '</span></td>' +
+        '<td><span class="name">' + r.closer + '</span></td>' +
+        '<td style="color:#64748b;">' + setterCell + '</td>' +
+        '<td class="num"><span class="cash">' + fmtFull(r.cash) + '</span></td>' +
+      '</tr>';
+    }).join('');
+    document.getElementById('deals-body').innerHTML = html;
+  }
+
+  function renderIRLO() {
+    document.getElementById('irlo-body').innerHTML =
+      '<tr>' +
+        '<td style="color:#64748b;">2026-04-03</td>' +
+        '<td><span class="name">La-von Green</span><br><span style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:0.04em;">Pending lease</span></td>' +
+        '<td><span class="badge badge-U">IRLO</span></td>' +
+        '<td class="num"><span class="cash">$10,500</span></td>' +
+      '</tr>' +
+      '<tr style="background:#fbfbf8;">' +
+        '<td colspan="3" style="text-align:right;font-weight:600;color:#64748b;">TOTAL MTD</td>' +
+        '<td class="num"><span class="cash">$10,500</span></td>' +
+      '</tr>';
+  }
+
+  function renderTrend() {
+    if (typeof Chart === 'undefined') {
+      var canvas = document.getElementById('trendChart');
+      canvas.style.display = 'none';
+      var fb = document.getElementById('trendFallback');
+      fb.style.display = 'block';
+      fb.innerHTML = '<table><thead><tr><th>Day</th><th class="num">Cash</th><th class="num">Deals</th></tr></thead><tbody>' +
+        APRIL_DAILY.filter(function(d){return d[1]>0;}).map(function(d) {
+          return '<tr><td>' + d[0] + '</td><td class="num"><span class="cash">' + fmtFull(d[1]) + '</span></td><td class="num">' + d[2] + '</td></tr>';
+        }).join('') + '</tbody></table>';
+      return;
+    }
+    var ctx = document.getElementById('trendChart').getContext('2d');
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: APRIL_DAILY.map(function(d) { return d[0].slice(8); }),
+        datasets: [{
+          label: 'Cash',
+          data: APRIL_DAILY.map(function(d) { return d[1]; }),
+          backgroundColor: APRIL_DAILY.map(function(d) { return d[1] > 0 ? '#10b981' : '#f1f5f9'; }),
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            backgroundColor: '#0f172a',
+            callbacks: {
+              title: function(ctx) { return APRIL_DAILY[ctx[0].dataIndex][0]; },
+              label: function(ctx) {
+                var deals = APRIL_DAILY[ctx.dataIndex][2];
+                return fmtFull(ctx.parsed.y) + ' · ' + deals + ' deal' + (deals !== 1 ? 's' : '');
+              }
+            }
+          }
+        },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: function(v) { return fmtMoney(v); }, color: '#94a3b8', font: {size: 11} }, grid: { color: '#f1f5f9' }},
+          x: { ticks: { color: '#94a3b8', font: {size: 10} }, grid: { display: false } }
+        }
+      }
+    });
+  }
+
+  var HS_TOOL = 'mcp__356ea399-08d0-4598-8d0f-de2a64c7e1e8__search_crm_objects';
+
+  async function hsCount(filterGroups, intent) {
+    try {
+      if (!window.cowork || !window.cowork.callMcpTool) return null;
+      var res = await window.cowork.callMcpTool(HS_TOOL, {
+        objectType: "contacts", filterGroups: filterGroups, limit: 1,
+        chatInsights: { userIntent: intent, satisfaction: "NEUTRAL" }
+      });
+      if (!res || res.isError) return null;
+      var data = res.structuredContent;
+      if (!data && res.content && res.content[0] && res.content[0].text) {
+        try { data = JSON.parse(res.content[0].text); } catch (e) { data = null; }
+      }
+      return data && typeof data.total === 'number' ? data.total : null;
+    } catch (e) { console.error('[dash] hsCount failed:', e); return null; }
+  }
+
+  var STATUS_ORDER = [
+    {key: "NEW",                          label: "NEW",                 stage: "NEW"},
+    {key: "ATTEMPTED_TO_CONTACT",         label: "Attempting Contact",  stage: "ATTEMPT"},
+    {key: "Appointment Set",              label: "Appointment Set",     stage: "APPT"},
+    {key: "Follow up Closers",            label: "FU - Closers",        stage: "FOLLOW"},
+    {key: "Follow up for Setters",        label: "FU - Setters",        stage: "FOLLOW"},
+    {key: "Long Term - Follow Up Closers",label: "Long-Term FU",        stage: "FOLLOW"},
+    {key: "Gino Working Lead",            label: "Gino Working",        stage: "WORKING"},
+    {key: "Tabare Working Lead",          label: "Tabare Working",      stage: "WORKING"},
+    {key: "No Show",                      label: "No Show",             stage: "NS"},
+    {key: "Not qualified for BNB",        label: "Not Qualified",       stage: "NQ"},
+    {key: "Lost",                         label: "Lost",                stage: "LOST"},
+    {key: "Won / Buyer",                  label: "Won / Buyer",         stage: "WON"}
+  ];
+
+  async function renderFunnel() {
+    try {
+      var counts = await Promise.all(STATUS_ORDER.map(function(s) {
+        return hsCount(
+          [{filters: [{propertyName: "hs_lead_status", operator: "EQ", value: s.key}]}],
+          "Count status " + s.key
+        );
+      }));
+      var maxCount = Math.max.apply(null, counts.filter(function(c) { return c !== null; }).concat([1]));
+      var totalAll = counts.reduce(function(s, c) { return s + (c || 0); }, 0);
+      var html = STATUS_ORDER.map(function(s, i) {
+        var count = counts[i];
+        if (count === null || count === 0) return '';
+        var pct = (count / maxCount) * 100;
+        var share = (count / totalAll * 100).toFixed(1);
+        return '<div class="funnel-row stage-' + s.stage + '">' +
+          '<div class="funnel-label">' + s.label + '</div>' +
+          '<div class="funnel-count">' + fmtNum(count) + '</div>' +
+          '<div class="funnel-pct">' + share + '%</div>' +
+          '<div class="funnel-bar-container"><div class="funnel-bar-fill" style="width:' + pct + '%;"></div></div>' +
+        '</div>';
+      }).join('');
+      document.getElementById('funnel-body').innerHTML = html || '<div style="padding:20px;text-align:center;color:#94a3b8;">HubSpot not connected</div>';
+      document.getElementById('funnel-meta').textContent = fmtNum(totalAll) + ' total';
+    } catch (e) {
+      console.error('[dash] renderFunnel failed:', e);
+      document.getElementById('funnel-body').innerHTML = '<div style="padding:20px;text-align:center;color:#94a3b8;">HubSpot connection error</div>';
+    }
+  }
+
+  async function renderVelocity() {
+    try {
+      var results = await Promise.all([
+        hsCount([{filters:[{propertyName:"createdate",operator:"GTE",value:"2026-04-01T00:00:00Z"}]}], "Leads MTD"),
+        hsCount([{filters:[{propertyName:"createdate",operator:"GTE",value:"2026-04-16T00:00:00Z"}]}], "Leads 7d"),
+        hsCount([{filters:[{propertyName:"closedate",operator:"GTE",value:"2026-04-01T00:00:00Z"}]}], "Closed MTD"),
+        hsCount([{filters:[{propertyName:"closedate",operator:"GTE",value:"2026-04-16T00:00:00Z"}]}], "Closed 7d")
+      ]);
+      var newMTD = results[0], newLast7d = results[1], wonMTD = results[2], wonLast7d = results[3];
+      var today = new Date();
+      var daysMTD = today.getDate();
+      var newPerDay = newMTD ? (newMTD / daysMTD).toFixed(0) : '—';
+      document.getElementById('velocity-body').innerHTML =
+        '<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">' +
+          '<div style="padding: 14px; background: #f8fafc; border-radius: 8px;">' +
+            '<div style="font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Raw Leads MTD</div>' +
+            '<div style="font-size: 22px; font-weight: 700; color: #8b5cf6;">' + fmtNum(newMTD || 0) + '</div>' +
+            '<div style="font-size: 11px; color: #94a3b8;">' + newPerDay + '/day · ' + fmtNum(newLast7d || 0) + ' in 7d</div>' +
+          '</div>' +
+          '<div style="padding: 14px; background: #f8fafc; border-radius: 8px;">' +
+            '<div style="font-size: 10px; color: #64748b; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px;">Won / Buyer MTD</div>' +
+            '<div style="font-size: 22px; font-weight: 700; color: #10b981;">' + fmtNum(wonMTD || 0) + '</div>' +
+            '<div style="font-size: 11px; color: #94a3b8;">' + fmtNum(wonLast7d || 0) + ' in 7d</div>' +
+          '</div>' +
+        '</div>' +
+        '<div style="font-size: 11px; color: #64748b; padding: 10px; background: #dbeafe; border-radius: 6px; border-left: 3px solid #3B82F6;">' +
+          '<strong>Raw leads = total HubSpot intake</strong> (bots, dupes, spam included). HubSpot Won differs from EOC because it includes IRLO, consulting, off-form closes.' +
+        '</div>';
+    } catch (e) {
+      console.error('[dash] renderVelocity failed:', e);
+    }
+  }
+
+  function init() {
+    safeRender('closers', renderClosers);
+    safeRender('setters', renderSetters);
+    safeRender('sources', renderSources);
+    safeRender('deals',   renderDeals);
+    safeRender('irlo',    renderIRLO);
+    safeRender('trend',   renderTrend);
+    renderFunnel();
+    renderVelocity();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
