@@ -180,19 +180,19 @@ tr:hover { background: #f8fafc; }
     <div class="kpi-accent"></div>
     <div class="kpi-label">Cash Collected MTD</div>
     <div class="kpi-value">$32,511</div>
-    <div class="kpi-sub">16 deposits/closes . ties GT Accounting</div>
+    <div class="kpi-sub">14 BNB + 2 IRLO . ties GT Accounting</div>
   </div>
   <div class="kpi kpi-deals">
     <div class="kpi-accent"></div>
     <div class="kpi-label">Deals Closed MTD</div>
     <div class="kpi-value">16</div>
-    <div class="kpi-sub">2 IRLO closes . 14 deposits</div>
+    <div class="kpi-sub">14 BNB + 2 IRLO upsells</div>
   </div>
   <div class="kpi kpi-close">
     <div class="kpi-accent"></div>
-    <div class="kpi-label">Team Close Rate</div>
-    <div class="kpi-value">48.5%</div>
-    <div class="kpi-sub">16 closed / 33 taken</div>
+    <div class="kpi-label">BNB Close Rate</div>
+    <div class="kpi-value">42.4%</div>
+    <div class="kpi-sub">14 BNB / 33 taken (excl IRLO)</div>
   </div>
   <div class="kpi kpi-show">
     <div class="kpi-accent"></div>
@@ -202,22 +202,22 @@ tr:hover { background: #f8fafc; }
   </div>
   <div class="kpi kpi-avg">
     <div class="kpi-accent"></div>
-    <div class="kpi-label">Avg Deal MTD</div>
-    <div class="kpi-value">$2,032</div>
-    <div class="kpi-sub">Cash / 16 events</div>
+    <div class="kpi-label">Avg BNB Deal</div>
+    <div class="kpi-value">$1,215</div>
+    <div class="kpi-sub">BNB only . $17K / 14</div>
   </div>
 </div>
 
 <div class="rules">
   <h3>Methodology</h3>
   <ul>
-    <li><strong>Cash:</strong> EOC Cash Collected column . reconciles to GT Accounting</li>
-    <li><strong>Closer close rate:</strong> their closes / their taken calls</li>
-    <li><strong>Setter show rate:</strong> their shown calls / their total sets (incl NS)</li>
+    <li><strong>Cash:</strong> All cash incl IRLO . reconciles to GT Accounting</li>
+    <li><strong>BNB Close rate:</strong> BNB closes / taken (IRLO excluded)</li>
+    <li><strong>Closer rate:</strong> their BNB closes / their taken calls</li>
+    <li><strong>Setter show rate:</strong> their shown calls / their total sets</li>
     <li><strong>Show rate MTD team:</strong> ~21% (33 taken / ~155 scheduled)</li>
+    <li><strong>IRLO:</strong> upsell . no setter comm . Tabare/GT/Steven split . NOT in close rate</li>
     <li><strong>Unattributed setter:</strong> Setter left team or data handed off</li>
-    <li><strong>IRLO:</strong> upsell . no setter comm . Tabare/GT/Steven split</li>
-    <li><strong>HubSpot leads:</strong> raw intake, incl. bots/dupes/spam</li>
     <li><strong>Source class:</strong> GT Accounting bucket, not EOC tag</li>
   </ul>
 </div>
@@ -369,7 +369,7 @@ tr:hover { background: #f8fafc; }
 
   function renderClosers() {
     var agg = {};
-    APRIL_DEALS.forEach(function(d) {
+    APRIL_DEALS.filter(function(d){return !d.isIRLO;}).forEach(function(d) {
       if (!agg[d.closer]) agg[d.closer] = {cash: 0, closes: 0};
       agg[d.closer].cash += d.cash;
       agg[d.closer].closes += 1;
@@ -398,7 +398,7 @@ tr:hover { background: #f8fafc; }
   function renderSetters() {
     var agg = {};
     var unCash = 0, unCount = 0;
-    APRIL_DEALS.forEach(function(d) {
+    APRIL_DEALS.filter(function(d){return !d.isIRLO;}).forEach(function(d) {
       if (!d.setter) { unCash += d.cash; unCount += 1; return; }
       if (!agg[d.setter]) agg[d.setter] = {cash: 0, closes: 0};
       agg[d.setter].cash += d.cash;
