@@ -166,7 +166,7 @@ tr:hover { background: #f8fafc; }
     </div>
     <div class="brand-text">
       <h1><span class="bnb">BNB</span><span class="kh">Know How</span><span class="cmd">- Sales Command</span><span class="mtd-pill" style="margin-left:4px;">April MTD</span></h1>
-      <p>Month-to-date . April 1 - April 23, 2026 . Live HubSpot pipeline</p>
+      <p>Month-to-date . April 1 - April 25, 2026 . Live HubSpot pipeline</p>
     </div>
   </div>
   <div class="data-stamp">
@@ -179,20 +179,20 @@ tr:hover { background: #f8fafc; }
   <div class="kpi kpi-cash">
     <div class="kpi-accent"></div>
     <div class="kpi-label">Cash Collected MTD</div>
-    <div class="kpi-value">$27,511</div>
-    <div class="kpi-sub">15 deposits/closes . ties GT Accounting</div>
+    <div class="kpi-value">$32,511</div>
+    <div class="kpi-sub">16 deposits/closes . ties GT Accounting</div>
   </div>
   <div class="kpi kpi-deals">
     <div class="kpi-accent"></div>
     <div class="kpi-label">Deals Closed MTD</div>
-    <div class="kpi-value">15</div>
-    <div class="kpi-sub">1 full close . 14 deposits</div>
+    <div class="kpi-value">16</div>
+    <div class="kpi-sub">2 IRLO closes . 14 deposits</div>
   </div>
   <div class="kpi kpi-close">
     <div class="kpi-accent"></div>
     <div class="kpi-label">Team Close Rate</div>
-    <div class="kpi-value">45.5%</div>
-    <div class="kpi-sub">15 closed / 33 taken</div>
+    <div class="kpi-value">48.5%</div>
+    <div class="kpi-sub">16 closed / 33 taken</div>
   </div>
   <div class="kpi kpi-show">
     <div class="kpi-accent"></div>
@@ -203,8 +203,8 @@ tr:hover { background: #f8fafc; }
   <div class="kpi kpi-avg">
     <div class="kpi-accent"></div>
     <div class="kpi-label">Avg Deal MTD</div>
-    <div class="kpi-value">$1,834</div>
-    <div class="kpi-sub">Cash / 15 events</div>
+    <div class="kpi-value">$2,032</div>
+    <div class="kpi-sub">Cash / 16 events</div>
   </div>
 </div>
 
@@ -224,7 +224,7 @@ tr:hover { background: #f8fafc; }
 
 <div class="grid-2">
   <div class="card">
-    <h2>Daily Cash - April 2026 <span class="meta">$27,511 MTD</span></h2>
+    <h2>Daily Cash - April 2026 <span class="meta">$32,511 MTD</span></h2>
     <div class="chart-wrap"><canvas id="trendChart"></canvas></div>
     <div id="trendFallback" style="display:none; padding: 20px; color: #64748b; font-size: 12px;"></div>
   </div>
@@ -283,7 +283,7 @@ tr:hover { background: #f8fafc; }
       <tbody id="irlo-body"></tbody>
     </table>
     <div style="margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 8px; font-size: 12px; color: #64748b;">
-      <strong style="color:#0f172a;">IRLO note:</strong> Unit upsell . no setter comm . Tabare/GT/Steven split. La-von Green $10,500 Apr 3.
+      <strong style="color:#0f172a;">IRLO note:</strong> Unit upsell . no setter comm . Tabare/GT/Steven split. La-von Green $10,500 Apr 3. New IRLO sale $5,000 Apr 24 (verify name with Tabare).
     </div>
   </div>
 </div>
@@ -316,7 +316,8 @@ tr:hover { background: #f8fafc; }
     {d:"2026-04-16", name:"Keyniah Riddick",     source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:100},
     {d:"2026-04-17", name:"Hellen Barrios",      source:"E book lead",     closer:"Gino",   setter:"Leah",      cash:1000},
     {d:"2026-04-20", name:"Noah Johnson",        source:"WEBBY LEAD",      closer:"Gino",   setter:"Leah",      cash:100},
-    {d:"2026-04-21", name:"Yolanda Williams",    source:"Airbnb VSL LEAD", closer:"Gino",   setter:"Leah",      cash:100}
+    {d:"2026-04-21", name:"Yolanda Williams",    source:"Airbnb VSL LEAD", closer:"Gino",   setter:"Leah",      cash:100},
+    {d:"2026-04-24", name:"New IRLO Sale",       source:"IRLO Marketplace",closer:"Tabare", setter:null,        cash:5000, isIRLO:true}
   ];
 
   var CLOSER_TAKEN = { "Gino": 32, "Tabare": 1 };
@@ -335,7 +336,8 @@ tr:hover { background: #f8fafc; }
     ["2026-04-09",1875,1],["2026-04-10",105,1],  ["2026-04-11",0,0],     ["2026-04-12",0,0],
     ["2026-04-13",0,0],   ["2026-04-14",0,0],    ["2026-04-15",5000,1],  ["2026-04-16",100,1],
     ["2026-04-17",1000,1],["2026-04-18",0,0],    ["2026-04-19",0,0],     ["2026-04-20",100,1],
-    ["2026-04-21",100,1], ["2026-04-22",0,0],    ["2026-04-23",0,0]
+    ["2026-04-21",100,1], ["2026-04-22",0,0],    ["2026-04-23",0,0],     ["2026-04-24",5000,1],
+    ["2026-04-25",0,0]
   ];
 
   function fmtMoney(n) { return n >= 1000 ? '$' + (n/1000).toFixed(n < 10000 ? 1 : 0) + 'k' : '$' + n.toLocaleString(); }
@@ -436,7 +438,7 @@ tr:hover { background: #f8fafc; }
   function renderSources() {
     var sources = [
       {name: "E Book Funnel",   code: "E", cash: 14955, deals: 7, label: "Hillary x2, Nakia, Aniyah, Aiden, Keyniah, Hellen"},
-      {name: "IRLO (Unit Sale)",code: "U", cash: 10500, deals: 1, label: "La-von Green"},
+      {name: "IRLO (Unit Sale)",code: "U", cash: 15500, deals: 2, label: "La-von Green + new IRLO sale"},
       {name: "WEBBY Funnel",    code: "W", cash: 1456,  deals: 5, label: "Sarayea, Gatlin, Daijah, Julianna, Noah"},
       {name: "Airbnb VSL",      code: "V", cash: 600,   deals: 2, label: "Jason, Yolanda"}
     ];
@@ -482,9 +484,15 @@ tr:hover { background: #f8fafc; }
         '<td><span class="badge badge-U">IRLO</span></td>' +
         '<td class="num"><span class="cash">$10,500</span></td>' +
       '</tr>' +
+      '<tr>' +
+        '<td style="color:#64748b;">2026-04-24</td>' +
+        '<td><span class="name">New IRLO Sale</span><br><span style="font-size:10px;color:#f59e0b;text-transform:uppercase;letter-spacing:0.04em;">Verify name with Tabare</span></td>' +
+        '<td><span class="badge badge-U">IRLO</span></td>' +
+        '<td class="num"><span class="cash">$5,000</span></td>' +
+      '</tr>' +
       '<tr style="background:#fbfbf8;">' +
         '<td colspan="3" style="text-align:right;font-weight:600;color:#64748b;">TOTAL MTD</td>' +
-        '<td class="num"><span class="cash">$10,500</span></td>' +
+        '<td class="num"><span class="cash">$15,500</span></td>' +
       '</tr>';
   }
 
